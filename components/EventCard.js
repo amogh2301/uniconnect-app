@@ -1,11 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet, Button } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { format } from "date-fns";
+import { useRSVP } from "../hooks/useRSVP";
 
 export default function EventCard({ event }) {
   const eventDate = event.timestamp?.toDate
     ? event.timestamp.toDate()
     : new Date(event.timestamp);
+
+  const { isRSVPed, toggleRSVP, loading } = useRSVP(event.id);
 
   return (
     <View style={styles.card}>
@@ -14,7 +17,12 @@ export default function EventCard({ event }) {
         📅 {format(eventDate, "MMMM d, yyyy • h:mm a")}
       </Text>
       <Text style={styles.meta}>📍 {event.location}</Text>
-      <Button title="RSVP" onPress={() => alert("RSVP coming soon")} />
+
+      <TouchableOpacity onPress={toggleRSVP} disabled={loading}>
+        <Text style={[styles.rsvp, isRSVPed && styles.going]}>
+          {loading ? "Loading..." : isRSVPed ? "✅ Going" : "RSVP"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -38,5 +46,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 8,
     color: "#666",
+  },
+  rsvp: {
+    marginTop: 10,
+    fontWeight: "600",
+    color: "#3366FF",
+    textAlign: "right",
+  },
+  going: {
+    color: "green",
   },
 });
