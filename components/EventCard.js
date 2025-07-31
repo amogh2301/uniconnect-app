@@ -1,22 +1,109 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { format } from "date-fns";
 import { useRSVP } from "../hooks/useRSVP";
+import { useAuth } from "../context/AuthContext";
+import { doc, deleteDoc, getDoc } from "firebase/firestore";
+import { db } from "../config/firebase";
 
-export default function EventCard({ event }) {
+// Custom hook to fetch user profile
+const useUserProfile = (userId) => {
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data());
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [userId]);
+
+  return { userProfile, loading };
+};
+
+export default function EventCard({ event, onEdit, onDelete }) {
+  const { user } = useAuth();
+  const { isRSVPed, toggleRSVP, loading } = useRSVP(event.id);
+  const { userProfile: creatorProfile } = useUserProfile(event.createdBy);
+  
   const eventDate = event.timestamp?.toDate
     ? event.timestamp.toDate()
     : new Date(event.timestamp);
 
-  const { isRSVPed, toggleRSVP, loading } = useRSVP(event.id);
+  const isEventCreator = user?.uid === event.createdBy;
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Event",
+      `Are you sure you want to delete "${event.title}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, "events", event.id));
+              if (onDelete) onDelete(event.id);
+            } catch (error) {
+              console.error("Error deleting event:", error);
+              Alert.alert("Error", "Failed to delete event.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleEdit = () => {
+    if (onEdit) onEdit(event);
+  };
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{event.title}</Text>
+      <View style={styles.header}>
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>{event.title}</Text>
+          <Text style={styles.creator}>
+            by {creatorProfile?.name || 'Unknown User'}
+          </Text>
+        </View>
+        {isEventCreator && (
+          <View style={styles.actions}>
+            <TouchableOpacity onPress={handleEdit} style={styles.actionButton}>
+              <Text style={styles.actionText}>✏️</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleDelete} style={styles.actionButton}>
+              <Text style={styles.actionText}>🗑️</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+      
       <Text style={styles.meta}>
         📅 {format(eventDate, "MMMM d, yyyy • h:mm a")}
       </Text>
       <Text style={styles.meta}>📍 {event.location}</Text>
+      {event.description && (
+        <Text style={styles.description} numberOfLines={2}>
+          {event.description}
+        </Text>
+      )}
 
       <TouchableOpacity onPress={toggleRSVP} disabled={loading}>
         <Text style={[styles.rsvp, isRSVPed && styles.going]}>
@@ -30,7 +117,7 @@ export default function EventCard({ event }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     elevation: 3,
@@ -38,14 +125,48 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
   },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  titleSection: {
+    flex: 1,
+    marginRight: 10,
+  },
   title: {
     fontSize: 18,
     fontWeight: "bold",
+    color: '#333',
+    marginBottom: 4,
+  },
+  creator: {
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
+  },
+  actions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  actionButton: {
+    padding: 4,
+  },
+  actionText: {
+    fontSize: 16,
   },
   meta: {
     marginTop: 4,
-    marginBottom: 8,
+    marginBottom: 6,
     color: "#666",
+    fontSize: 14,
+  },
+  description: {
+    color: '#666',
+    fontSize: 14,
+    marginBottom: 8,
+    lineHeight: 18,
   },
   rsvp: {
     marginTop: 10,

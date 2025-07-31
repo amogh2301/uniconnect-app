@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { db } from '../config/firebase';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import LocationPicker from '../components/LocationPicker';
 
-export default function CreateEventScreen({ navigation }) {
+export default function EditEventScreen({ navigation, route }) {
+  const { event } = route.params;
   const { user } = useAuth();
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('');
-  const [latitude, setLatitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
-  const [date, setDate] = useState(new Date());
+  const [title, setTitle] = useState(event.title || '');
+  const [description, setDescription] = useState(event.description || '');
+  const [location, setLocation] = useState(event.location || '');
+  const [latitude, setLatitude] = useState(event.latitude || null);
+  const [longitude, setLongitude] = useState(event.longitude || null);
+  const [date, setDate] = useState(event.timestamp?.toDate ? event.timestamp.toDate() : new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+
+  // Check if user is the event creator
+  useEffect(() => {
+    if (user?.uid !== event.createdBy) {
+      Alert.alert("Access Denied", "You can only edit events you created.");
+      navigation.goBack();
+    }
+  }, [user, event, navigation]);
 
   const handleLocationSelect = (locationData) => {
     setLatitude(locationData.latitude);
@@ -25,7 +34,7 @@ export default function CreateEventScreen({ navigation }) {
     setLocation(locationData.address || 'Selected location');
   };
 
-  const handleCreateEvent = async () => {
+  const handleUpdateEvent = async () => {
     if (!title || !description || !location || !date) {
       Alert.alert("Error", "All fields are required.");
       return;
@@ -39,21 +48,22 @@ export default function CreateEventScreen({ navigation }) {
     setIsLoading(true);
 
     try {
-      await addDoc(collection(db, 'events'), {
+      const eventRef = doc(db, 'events', event.id);
+      await updateDoc(eventRef, {
         title,
         description,
         location,
         latitude,
         longitude,
         timestamp: Timestamp.fromDate(date),
-        createdBy: user.uid,
+        updatedAt: new Date(),
       });
 
-      Alert.alert("Success", "Event created!");
+      Alert.alert("Success", "Event updated successfully!");
       navigation.goBack();
     } catch (error) {
-      console.error("Error creating event:", error);
-      Alert.alert("Error", "Could not create event.");
+      console.error("Error updating event:", error);
+      Alert.alert("Error", "Could not update event.");
     } finally {
       setIsLoading(false);
     }
@@ -61,6 +71,8 @@ export default function CreateEventScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>Edit Event</Text>
+      
       <Text style={styles.label}>Event Title</Text>
       <TextInput 
         style={styles.input} 
@@ -109,11 +121,19 @@ export default function CreateEventScreen({ navigation }) {
         />
       )}
 
-      <View style={{ marginTop: 20 }}>
+      <View style={styles.buttonContainer}>
         <Button 
-          title={isLoading ? "Creating..." : "Create Event"} 
-          onPress={handleCreateEvent}
+          title={isLoading ? "Updating..." : "Update Event"} 
+          onPress={handleUpdateEvent}
           disabled={isLoading || !latitude || !longitude}
+        />
+      </View>
+      
+      <View style={styles.buttonContainer}>
+        <Button 
+          title="Cancel" 
+          onPress={() => navigation.goBack()}
+          color="#666"
         />
       </View>
 
@@ -132,6 +152,12 @@ const styles = StyleSheet.create({
     padding: 20,
     flex: 1,
     backgroundColor: '#fff'
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   label: {
     marginTop: 15,
@@ -165,5 +191,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#28a745',
     fontStyle: 'italic'
+  },
+  buttonContainer: {
+    marginTop: 20,
   }
-});
+}); 
