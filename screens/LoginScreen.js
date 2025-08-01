@@ -4,16 +4,29 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "fire
 import { auth } from "../config/firebase";
 import { isUBCStudentEmail } from "../utils/validators";
 import { useAuth } from "../context/AuthContext";
+import EmailVerificationService from "../services/EmailVerificationService";
 
 const { width, height } = Dimensions.get('window');
 const isSmallScreen = height < 700;
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation, route }) {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [mode, setMode] = useState("login"); // 'login' | 'signup'
   const [loading, setLoading] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
   const { user } = useAuth();
+
+  // Handle route params for verified email
+  useEffect(() => {
+    if (route.params?.verifiedEmail) {
+      setEmail(route.params.verifiedEmail);
+      setMode('signup');
+    }
+    if (route.params?.message) {
+      Alert.alert('Success', route.params.message);
+    }
+  }, [route.params]);
 
   // If user is already authenticated, they shouldn't see this screen
   // The navigation will handle redirecting them to the main app
@@ -23,6 +36,39 @@ export default function LoginScreen() {
       return;
     }
   }, [user]);
+
+  const handleSendOTP = async () => {
+    if (!isUBCStudentEmail(email)) {
+      Alert.alert("Invalid Email", "Please use your @student.ubc.ca email address.");
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const result = await EmailVerificationService.sendOTP(email);
+      
+      if (result.success) {
+        Alert.alert("OTP Sent", result.message, [
+          {
+            text: "Verify Email",
+            onPress: () => {
+              navigation.navigate('OTPVerification', { 
+                email, 
+                password: pw, 
+                isSignUp: true 
+              });
+            }
+          }
+        ]);
+      } else {
+        Alert.alert("Error", result.message);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to send OTP. Please try again.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   const handleAuth = async () => {
     if (!isUBCStudentEmail(email)) {
@@ -37,6 +83,22 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       if (mode === "signup") {
+        // Check if email is verified before allowing signup
+        const isVerified = await EmailVerificationService.isEmailVerified(email);
+        
+        if (!isVerified) {
+          Alert.alert(
+            "Email Verification Required", 
+            "Please verify your UBC student email address before signing up.",
+            [
+              { text: "Cancel", style: "cancel" },
+              { text: "Send OTP", onPress: handleSendOTP }
+            ]
+          );
+          setLoading(false);
+          return;
+        }
+
         await createUserWithEmailAndPassword(auth, email, pw);
         Alert.alert("Success", "Account created successfully! Welcome to UniConnect!");
       } else {
@@ -98,6 +160,14 @@ export default function LoginScreen() {
             />
           </View>
 
+          {mode === "signup" && (
+            <View style={styles.verificationInfo}>
+              <Text style={styles.verificationText}>
+                🔐 UBC student email verification required for sign up
+              </Text>
+            </View>
+          )}
+
           <TouchableOpacity 
             style={[styles.authButton, loading && styles.authButtonDisabled]} 
             onPress={handleAuth} 
@@ -111,6 +181,22 @@ export default function LoginScreen() {
               </Text>
             )}
           </TouchableOpacity>
+
+          {mode === "signup" && (
+            <TouchableOpacity 
+              style={styles.otpButton} 
+              onPress={handleSendOTP}
+              disabled={otpLoading || !isUBCStudentEmail(email)}
+            >
+              {otpLoading ? (
+                <ActivityIndicator color="#3366FF" size="small" />
+              ) : (
+                <Text style={styles.otpButtonText}>
+                  📧 Send Verification Code
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity 
             style={styles.toggleButton} 
@@ -229,5 +315,32 @@ const styles = StyleSheet.create({
     color: '#999',
     textAlign: 'center',
     lineHeight: 16,
+  },
+  verificationInfo: {
+    backgroundColor: '#e0f7fa',
+    borderRadius: 12,
+    padding: 15,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  verificationText: {
+    fontSize: 14,
+    color: '#00796b',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  otpButton: {
+    backgroundColor: '#e0f7fa',
+    borderRadius: 12,
+    padding: isSmallScreen ? 14 : 16,
+    alignItems: 'center',
+    marginTop: 15,
+    borderWidth: 1,
+    borderColor: '#3366FF',
+  },
+  otpButtonText: {
+    color: '#3366FF',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

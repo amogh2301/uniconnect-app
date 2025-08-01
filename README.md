@@ -6,12 +6,14 @@ A React Native mobile application designed for UBC students to discover, create,
 
 ### 🔐 Authentication & User Management
 - **UBC Email Authentication**: Secure login using @student.ubc.ca email addresses
+- **OTP Verification**: Email verification with 6-digit codes to ensure authentic UBC students
 - **User Profiles**: Customizable profiles with editable names and avatars
 - **Persistent Sessions**: Automatic login for returning users
 - **Profile Management**: Edit personal information and view activity
 
 ### 📅 Event Management
-- **Create Events**: Easy event creation with title, description, date, time, and location
+- **Create Events**: Easy event creation with title, description, date, time, location, and category
+- **Event Categories**: 12 predefined categories (Academic, Social, Sports, Cultural, etc.)
 - **Interactive Location Picker**: Map-based location selection with geocoding
 - **Event Editing**: Modify existing events (creator only)
 - **Event Deletion**: Remove events with confirmation (creator only)
@@ -44,6 +46,13 @@ A React Native mobile application designed for UBC students to discover, create,
 - **Permission Management**: Smart permission handling
 - **Cross-platform**: Works on both iOS and Android
 - **Customizable**: Different notification types and schedules
+
+### 🏷️ Event Categories & Filtering
+- **12 Predefined Categories**: Academic, Social, Sports, Cultural, Career, Outdoor, Technology, Music, Food, Volunteer, Health, Other
+- **Category Filtering**: Filter events by category on home screen
+- **Visual Category Picker**: Modal-based category selection with icons and descriptions
+- **Category Badges**: Color-coded category display on event cards
+- **Category-based Browsing**: Easy discovery of events by interest
 
 ### 📱 User Experience
 - **Responsive Design**: Adapts to different phone screen sizes
@@ -81,43 +90,6 @@ A React Native mobile application designed for UBC students to discover, create,
 
 *[Screenshots would be added here showing the main screens of the app]*
 
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
-- Expo CLI (`npm install -g @expo/cli`)
-- iOS Simulator (for iOS development) or Android Studio (for Android development)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd uniconnect-app
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up Firebase**
-   - Create a new Firebase project
-   - Enable Authentication with Email/Password
-   - Create a Firestore database
-   - Add your Firebase configuration to `config/firebase.js`
-
-4. **Start the development server**
-   ```bash
-   npm start
-   ```
-
-5. **Run on device/simulator**
-   - Scan the QR code with Expo Go app (physical device)
-   - Press 'i' for iOS simulator
-   - Press 'a' for Android emulator
-
 ## 📁 Project Structure
 
 ```
@@ -125,7 +97,9 @@ uniconnect-app/
 ├── components/          # Reusable UI components
 │   ├── ChatMessage.js   # Individual chat message component
 │   ├── EventCard.js     # Event display card
-│   └── LocationPicker.js # Map-based location selector
+│   ├── LocationPicker.js # Map-based location selector
+│   ├── CategoryPicker.js # Category selection modal
+│   └── CategoryFilter.js # Category filtering component
 ├── config/              # Configuration files
 │   └── firebase.js      # Firebase configuration
 ├── context/             # React Context providers
@@ -138,17 +112,20 @@ uniconnect-app/
 ├── navigation/          # Navigation configuration
 │   └── index.js         # Main navigation setup
 ├── screens/             # App screens
-│   ├── HomeScreen.js    # Main events list
+│   ├── HomeScreen.js    # Main events list with filtering
 │   ├── MapScreen.js     # Interactive map view
 │   ├── ProfileScreen.js # User profile
-│   ├── LoginScreen.js   # Authentication
-│   ├── CreateEventScreen.js # Event creation
+│   ├── LoginScreen.js   # Authentication with OTP
+│   ├── OTPVerificationScreen.js # Email verification
+│   ├── CreateEventScreen.js # Event creation with categories
 │   ├── EditEventScreen.js   # Event editing
 │   └── EventChatScreen.js   # Event discussions
 ├── services/            # External services
-│   └── NotificationService.js # Push notifications
+│   ├── NotificationService.js # Push notifications
+│   └── EmailVerificationService.js # OTP verification
 ├── utils/               # Utility functions
 │   ├── validators.js    # Input validation
+│   ├── categories.js    # Event categories configuration
 │   └── rsvpUtils.js     # RSVP utilities
 └── App.js               # Main app component
 ```
@@ -204,6 +181,7 @@ events/{eventId}
 ├── location: string
 ├── latitude: number
 ├── longitude: number
+├── category: string
 ├── timestamp: timestamp
 ├── createdBy: string
 └── messages/{messageId}
@@ -211,6 +189,20 @@ events/{eventId}
     ├── userId: string
     ├── userName: string
     └── timestamp: timestamp
+```
+
+**Email Verification Collection**
+```
+emailVerification/{email}
+├── otp: string
+├── expiryTime: timestamp
+├── attempts: number
+└── createdAt: timestamp
+
+verifiedEmails/{email}
+├── verified: boolean
+├── verifiedAt: timestamp
+└── email: string
 ```
 
 ## 🚀 Deployment
@@ -228,29 +220,6 @@ expo build:android
 1. Configure app.json with your app details
 2. Build the app using Expo
 3. Submit to App Store Connect (iOS) or Google Play Console (Android)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **UBC Community**: For inspiration and feedback
-- **Expo Team**: For the amazing development platform
-- **Firebase Team**: For the robust backend services
-- **React Native Community**: For the excellent documentation and support
-
-## 📞 Support
-
-For support, email [your-email@ubc.ca](mailto:your-email@ubc.ca) or create an issue in the repository.
 
 ---
 

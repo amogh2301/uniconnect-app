@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Dimensions, SafeAreaView } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useEvents } from "../hooks/useEvents";
 import { useAuth } from "../context/AuthContext";
 import { useRSVPCount } from "../hooks/useRSVPCount";
 import EventCard from "../components/EventCard";
+import CategoryFilter from "../components/CategoryFilter";
 
 const { width, height } = Dimensions.get('window');
 const isSmallScreen = height < 700;
@@ -14,6 +15,7 @@ export default function HomeScreen() {
   const { events, loading, refetch } = useEvents();
   const { userProfile } = useAuth();
   const { rsvpCount } = useRSVPCount();
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   // Refresh events when screen comes into focus
   useFocusEffect(
@@ -42,6 +44,11 @@ export default function HomeScreen() {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   };
+
+  // Filter events by selected category
+  const filteredEvents = selectedCategory 
+    ? events.filter(event => event.category === selectedCategory)
+    : events;
 
   if (loading) {
     return (
@@ -99,8 +106,22 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        <CategoryFilter
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
+
+        {filteredEvents.length === 0 && selectedCategory && (
+          <View style={styles.noResultsContainer}>
+            <Text style={styles.noResultsTitle}>No events in this category</Text>
+            <Text style={styles.noResultsSubtitle}>
+              Try selecting a different category or create a new event!
+            </Text>
+          </View>
+        )}
+
         <FlatList
-          data={events}
+          data={filteredEvents}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
@@ -223,5 +244,22 @@ const styles = StyleSheet.create({
     fontSize: isSmallScreen ? 20 : 24,
     color: 'white',
     fontWeight: 'bold',
+  },
+  noResultsContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+  },
+  noResultsTitle: {
+    fontSize: isSmallScreen ? 18 : 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noResultsSubtitle: {
+    fontSize: isSmallScreen ? 14 : 16,
+    color: '#666',
+    textAlign: 'center',
   },
 });

@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { db } from '../config/firebase';
-import { doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import LocationPicker from '../components/LocationPicker';
+import CategoryPicker from '../components/CategoryPicker';
 
-export default function EditEventScreen({ navigation, route }) {
+const { width, height } = Dimensions.get('window');
+const isSmallScreen = height < 700;
+
+export default function EditEventScreen({ route, navigation }) {
   const { event } = route.params;
   const { user } = useAuth();
 
@@ -15,18 +19,18 @@ export default function EditEventScreen({ navigation, route }) {
   const [location, setLocation] = useState(event.location || '');
   const [latitude, setLatitude] = useState(event.latitude || null);
   const [longitude, setLongitude] = useState(event.longitude || null);
-  const [date, setDate] = useState(event.timestamp?.toDate ? event.timestamp.toDate() : new Date());
+  const [date, setDate] = useState(event.timestamp?.toDate ? event.timestamp.toDate() : new Date(event.timestamp));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [category, setCategory] = useState(event.category || 'other');
 
   // Check if user is the event creator
-  useEffect(() => {
-    if (user?.uid !== event.createdBy) {
-      Alert.alert("Access Denied", "You can only edit events you created.");
-      navigation.goBack();
-    }
-  }, [user, event, navigation]);
+  if (user?.uid !== event.createdBy) {
+    Alert.alert("Access Denied", "You can only edit events you created.");
+    navigation.goBack();
+    return null;
+  }
 
   const handleLocationSelect = (locationData) => {
     setLatitude(locationData.latitude);
@@ -55,8 +59,8 @@ export default function EditEventScreen({ navigation, route }) {
         location,
         latitude,
         longitude,
-        timestamp: Timestamp.fromDate(date),
-        updatedAt: new Date(),
+        category, // Add category to update
+        timestamp: date,
       });
 
       Alert.alert("Success", "Event updated successfully!");
@@ -70,88 +74,96 @@ export default function EditEventScreen({ navigation, route }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Edit Event</Text>
-      
-      <Text style={styles.label}>Event Title</Text>
-      <TextInput 
-        style={styles.input} 
-        value={title} 
-        onChangeText={setTitle}
-        placeholder="Enter event title"
-      />
-
-      <Text style={styles.label}>Description</Text>
-      <TextInput 
-        style={[styles.input, { height: 80 }]} 
-        value={description} 
-        onChangeText={setDescription} 
-        multiline
-        placeholder="Enter event description"
-      />
-
-      <Text style={styles.label}>Location</Text>
-      <TouchableOpacity 
-        style={styles.locationButton} 
-        onPress={() => setShowLocationPicker(true)}
-      >
-        <Text style={styles.locationButtonText}>
-          {location ? '📍 ' + location : '🗺️ Select Location on Map'}
-        </Text>
-      </TouchableOpacity>
-      
-      {latitude && longitude && (
-        <Text style={styles.coordinates}>
-          ✅ Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
-        </Text>
-      )}
-
-      <Text style={styles.label}>Date & Time</Text>
-      <Button title={date.toLocaleString()} onPress={() => setShowDatePicker(true)} />
-
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="datetime"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) setDate(selectedDate);
-          }}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <Text style={styles.label}>Event Title</Text>
+        <TextInput 
+          style={styles.input} 
+          value={title} 
+          onChangeText={setTitle}
+          placeholder="Enter event title"
         />
-      )}
 
-      <View style={styles.buttonContainer}>
-        <Button 
-          title={isLoading ? "Updating..." : "Update Event"} 
+        <Text style={styles.label}>Category</Text>
+        <CategoryPicker
+          selectedCategory={category}
+          onSelectCategory={setCategory}
+          style={styles.categoryPicker}
+        />
+
+        <Text style={styles.label}>Description</Text>
+        <TextInput 
+          style={[styles.input, { height: 80 }]} 
+          value={description} 
+          onChangeText={setDescription} 
+          multiline
+          placeholder="Enter event description"
+        />
+
+        <Text style={styles.label}>Location</Text>
+        <TouchableOpacity 
+          style={styles.locationButton} 
+          onPress={() => setShowLocationPicker(true)}
+        >
+          <Text style={styles.locationButtonText}>
+            {location ? '📍 ' + location : '🗺️ Select Location on Map'}
+          </Text>
+        </TouchableOpacity>
+        
+        {latitude && longitude && (
+          <Text style={styles.coordinates}>
+            ✅ Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+          </Text>
+        )}
+
+        <Text style={styles.label}>Date & Time</Text>
+        <Button title={date.toLocaleString()} onPress={() => setShowDatePicker(true)} />
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="datetime"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) {
+                setDate(selectedDate);
+              }
+            }}
+          />
+        )}
+
+        <TouchableOpacity 
+          style={[styles.updateButton, isLoading && styles.updateButtonDisabled]} 
           onPress={handleUpdateEvent}
-          disabled={isLoading || !latitude || !longitude}
-        />
-      </View>
-      
-      <View style={styles.buttonContainer}>
-        <Button 
-          title="Cancel" 
-          onPress={() => navigation.goBack()}
-          color="#666"
-        />
-      </View>
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.updateButtonText}>Update Event</Text>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
 
-      <LocationPicker
-        visible={showLocationPicker}
-        onClose={() => setShowLocationPicker(false)}
-        onLocationSelect={handleLocationSelect}
-        initialLocation={latitude && longitude ? { latitude, longitude } : null}
-      />
-    </View>
+      {showLocationPicker && (
+        <LocationPicker
+          onLocationSelect={handleLocationSelect}
+          onClose={() => setShowLocationPicker(false)}
+        />
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     padding: 20,
     flex: 1,
-    backgroundColor: '#fff'
   },
   header: {
     fontSize: 24,
@@ -194,5 +206,25 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 20,
-  }
+  },
+  categoryPicker: {
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  updateButton: {
+    backgroundColor: '#3366FF',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  updateButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  updateButtonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.7,
+  },
 }); 

@@ -5,6 +5,7 @@ import { useRSVP } from "../hooks/useRSVP";
 import { useAuth } from "../context/AuthContext";
 import { doc, deleteDoc, getDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
+import { getCategoryIcon, getCategoryColor, getCategoryName } from "../utils/categories";
 
 // Custom hook to fetch user profile
 const useUserProfile = (userId) => {
@@ -82,7 +83,15 @@ export default function EventCard({ event, onEdit, onDelete, onChat }) {
     <View style={styles.card}>
       <View style={styles.header}>
         <View style={styles.titleSection}>
-          <Text style={styles.title}>{event.title}</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{event.title}</Text>
+            {event.category && (
+              <View style={[styles.categoryBadge, { backgroundColor: getCategoryColor(event.category) }]}>
+                <Text style={styles.categoryIcon}>{getCategoryIcon(event.category)}</Text>
+                <Text style={styles.categoryText}>{getCategoryName(event.category)}</Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.creator}>
             by {creatorProfile?.name || 'Unknown User'}
           </Text>
@@ -145,11 +154,35 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 10,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
   title: {
     fontSize: 18,
     fontWeight: "bold",
     color: '#333',
-    marginBottom: 4,
+    flex: 1,
+    marginRight: 8,
+  },
+  categoryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 60,
+  },
+  categoryIcon: {
+    fontSize: 12,
+    marginRight: 4,
+  },
+  categoryText: {
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: '600',
   },
   creator: {
     fontSize: 12,

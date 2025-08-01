@@ -12,6 +12,7 @@ import ProfileScreen from "../screens/ProfileScreen";
 import CreateEventScreen from "../screens/CreateEventScreen";
 import EditEventScreen from "../screens/EditEventScreen";
 import EventChatScreen from "../screens/EventChatScreen";
+import OTPVerificationScreen from "../screens/OTPVerificationScreen";
 import { useAuth } from "../context/AuthContext";
 
 const Stack = createNativeStackNavigator();
@@ -116,6 +117,11 @@ export default function RootNavigator() {
           <Stack.Screen
             name="Login"
             component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OTPVerification"
+            component={OTPVerificationScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

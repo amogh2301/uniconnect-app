@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { db } from '../config/firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import LocationPicker from '../components/LocationPicker';
+import CategoryPicker from '../components/CategoryPicker';
+
+const { width, height } = Dimensions.get('window');
+const isSmallScreen = height < 700;
 
 export default function CreateEventScreen({ navigation }) {
   const { user } = useAuth();
@@ -18,6 +22,7 @@ export default function CreateEventScreen({ navigation }) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [category, setCategory] = useState('other'); // Default category
 
   const handleLocationSelect = (locationData) => {
     setLatitude(locationData.latitude);
@@ -45,6 +50,7 @@ export default function CreateEventScreen({ navigation }) {
         location,
         latitude,
         longitude,
+        category, // Add category to event data
         timestamp: Timestamp.fromDate(date),
         createdBy: user.uid,
       });
@@ -60,78 +66,96 @@ export default function CreateEventScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Event Title</Text>
-      <TextInput 
-        style={styles.input} 
-        value={title} 
-        onChangeText={setTitle}
-        placeholder="Enter event title"
-      />
-
-      <Text style={styles.label}>Description</Text>
-      <TextInput 
-        style={[styles.input, { height: 80 }]} 
-        value={description} 
-        onChangeText={setDescription} 
-        multiline
-        placeholder="Enter event description"
-      />
-
-      <Text style={styles.label}>Location</Text>
-      <TouchableOpacity 
-        style={styles.locationButton} 
-        onPress={() => setShowLocationPicker(true)}
-      >
-        <Text style={styles.locationButtonText}>
-          {location ? '📍 ' + location : '🗺️ Select Location on Map'}
-        </Text>
-      </TouchableOpacity>
-      
-      {latitude && longitude && (
-        <Text style={styles.coordinates}>
-          ✅ Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
-        </Text>
-      )}
-
-      <Text style={styles.label}>Date & Time</Text>
-      <Button title={date.toLocaleString()} onPress={() => setShowDatePicker(true)} />
-
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="datetime"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) setDate(selectedDate);
-          }}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <Text style={styles.label}>Event Title</Text>
+        <TextInput 
+          style={styles.input} 
+          value={title} 
+          onChangeText={setTitle}
+          placeholder="Enter event title"
         />
-      )}
 
-      <View style={{ marginTop: 20 }}>
-        <Button 
-          title={isLoading ? "Creating..." : "Create Event"} 
+        <Text style={styles.label}>Category</Text>
+        <CategoryPicker
+          selectedCategory={category}
+          onSelectCategory={setCategory}
+          style={styles.categoryPicker}
+        />
+
+        <Text style={styles.label}>Description</Text>
+        <TextInput 
+          style={[styles.input, { height: 80 }]} 
+          value={description} 
+          onChangeText={setDescription} 
+          multiline
+          placeholder="Enter event description"
+        />
+
+        <Text style={styles.label}>Location</Text>
+        <TouchableOpacity 
+          style={styles.locationButton} 
+          onPress={() => setShowLocationPicker(true)}
+        >
+          <Text style={styles.locationButtonText}>
+            {location ? '📍 ' + location : '🗺️ Select Location on Map'}
+          </Text>
+        </TouchableOpacity>
+        
+        {latitude && longitude && (
+          <Text style={styles.coordinates}>
+            ✅ Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+          </Text>
+        )}
+
+        <Text style={styles.label}>Date & Time</Text>
+        <Button title={date.toLocaleString()} onPress={() => setShowDatePicker(true)} />
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="datetime"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) {
+                setDate(selectedDate);
+              }
+            }}
+          />
+        )}
+
+        <TouchableOpacity 
+          style={[styles.createButton, isLoading && styles.createButtonDisabled]} 
           onPress={handleCreateEvent}
-          disabled={isLoading || !latitude || !longitude}
-        />
-      </View>
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.createButtonText}>Create Event</Text>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
 
-      <LocationPicker
-        visible={showLocationPicker}
-        onClose={() => setShowLocationPicker(false)}
-        onLocationSelect={handleLocationSelect}
-        initialLocation={latitude && longitude ? { latitude, longitude } : null}
-      />
-    </View>
+      {showLocationPicker && (
+        <LocationPicker
+          onLocationSelect={handleLocationSelect}
+          onClose={() => setShowLocationPicker(false)}
+        />
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff'
+  },
   container: {
     padding: 20,
     flex: 1,
-    backgroundColor: '#fff'
   },
   label: {
     marginTop: 15,
@@ -144,6 +168,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginTop: 5
+  },
+  categoryPicker: {
+    marginTop: 10,
+    marginBottom: 10,
   },
   locationButton: {
     borderWidth: 1,
@@ -165,5 +193,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#28a745',
     fontStyle: 'italic'
-  }
+  },
+  createButton: {
+    backgroundColor: '#3366FF',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  createButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  createButtonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.7,
+  },
 });
