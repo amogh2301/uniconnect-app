@@ -88,7 +88,25 @@ A React Native mobile application designed for UBC students to discover, create,
 
 ## 📱 Screenshots
 
-*[Screenshots would be added here showing the main screens of the app]*
+### 🏠 Home Screen
+![Home Screen](assets/screenshots/home-screen.png)
+*Personalized dashboard with event filtering, RSVP tracking, and quick event creation*
+
+### 🗺️ Map Screen
+![Map Screen](assets/screenshots/map-screen.png)
+*Interactive campus map with event pins and popup details for seamless event discovery*
+
+### 💬 Event Chat Screen
+![Event Chat Screen](assets/screenshots/chat-screen.png)
+*Real-time event discussions with clean interface and message persistence*
+
+### 📝 Category Selection Modal
+![Category Selection](assets/screenshots/category-modal.png)
+*Intuitive category picker with 12 predefined options and visual icons*
+
+### 👤 Profile Screen
+![Profile Screen](assets/screenshots/profile-screen.png)
+*User profile management with editable information and activity statistics*
 
 ## 📁 Project Structure
 
