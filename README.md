@@ -88,25 +88,41 @@ A React Native mobile application designed for UBC students to discover, create,
 
 ## 📱 Screenshots
 
-### 🏠 Home Screen
-![Home Screen](assets/app_screenshots/home-screen.png)
-*Personalized dashboard with event filtering, RSVP tracking, and quick event creation*
-
-### 🗺️ Map Screen
-![Map Screen](assets/app_screenshots/map-screen.png)
-*Interactive campus map with event pins and popup details for seamless event discovery*
-
-### 💬 Event Chat Screen
-![Event Chat Screen](assets/app_screenshots/chat-screen.png)
-*Real-time event discussions with clean interface and message persistence*
-
-### 📝 Category Selection Modal
-![Category Selection](assets/app_screenshots/category-modal.png)
-*Intuitive category picker with 12 predefined options and visual icons*
-
-### 👤 Profile Screen
-![Profile Screen](assets/app_screenshots/profile-screen.png)
-*User profile management with editable information and activity statistics*
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="assets/app_screenshots/home-screen.png" width="200" alt="Home Screen">
+        <br><strong>🏠 Home Screen</strong><br>
+        <em>Personalized dashboard with event filtering, RSVP tracking, and quick event creation</em>
+      </td>
+      <td align="center">
+        <img src="assets/app_screenshots/map-screen.png" width="200" alt="Map Screen">
+        <br><strong>🗺️ Map Screen</strong><br>
+        <em>Interactive campus map with event pins and popup details for seamless event discovery</em>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="assets/app_screenshots/chat-screen.png" width="200" alt="Event Chat Screen">
+        <br><strong>💬 Event Chat Screen</strong><br>
+        <em>Real-time event discussions with clean interface and message persistence</em>
+      </td>
+      <td align="center">
+        <img src="assets/app_screenshots/category-modal.png" width="200" alt="Category Selection">
+        <br><strong>📝 Category Selection Modal</strong><br>
+        <em>Intuitive category picker with 12 predefined options and visual icons</em>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" colspan="2">
+        <img src="assets/app_screenshots/profile-screen.png" width="200" alt="Profile Screen">
+        <br><strong>👤 Profile Screen</strong><br>
+        <em>User profile management with editable information and activity statistics</em>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ## 📁 Project Structure
 
