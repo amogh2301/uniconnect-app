@@ -1,15 +1,17 @@
 import React from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, Dimensions, SafeAreaView, ActivityIndicator } from "react-native";
 import MapView, { Marker, Callout, CalloutSubview } from "react-native-maps";
+import { format } from "date-fns";
 import { useEvents } from "../hooks/useEvents";
 import { useRSVP } from "../hooks/useRSVP";
 import { useFocusEffect } from "@react-navigation/native";
-import { format } from "date-fns";
+import { useNavigation } from "@react-navigation/native";
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
 const isSmallScreen = height < 700;
 
 export default function MapScreen() {
+  const navigation = useNavigation();
   const { events, loading, refetch } = useEvents();
 
   // Refresh events when screen comes into focus
@@ -19,9 +21,8 @@ export default function MapScreen() {
     }, [refetch])
   );
 
-  // UBC Campus coordinates as initial region
   const initialRegion = {
-    latitude: 49.2606,
+    latitude: 49.2606, // UBC coordinates
     longitude: -123.2460,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
@@ -31,6 +32,7 @@ export default function MapScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#3366FF" />
           <Text style={styles.loadingText}>Loading events...</Text>
         </View>
       </SafeAreaView>
@@ -57,7 +59,7 @@ export default function MapScreen() {
             >
               <Callout tooltip>
                 <View style={styles.calloutContainer}>
-                  <EventPopup event={event} />
+                  <EventPopup event={event} navigation={navigation} />
                 </View>
               </Callout>
             </Marker>
@@ -68,9 +70,13 @@ export default function MapScreen() {
   );
 }
 
-function EventPopup({ event }) {
+function EventPopup({ event, navigation }) {
   const { isRSVPed, toggleRSVP, loading } = useRSVP(event.id);
   const eventDate = event.timestamp?.toDate ? event.timestamp.toDate() : new Date(event.timestamp);
+
+  const handleChat = () => {
+    navigation.navigate('EventChat', { event });
+  };
 
   return (
     <View style={styles.popupContainer}>
@@ -93,14 +99,22 @@ function EventPopup({ event }) {
       {/* Spacer */}
       <View style={{ height: 12 }} />
       
-      {/* RSVP Button */}
-      <CalloutSubview onPress={toggleRSVP}>
-        <View style={styles.rsvpButton}>
-          <Text style={[styles.rsvpText, isRSVPed && styles.rsvpTextGoing]}>
-            {loading ? "..." : isRSVPed ? "✅ Going" : "RSVP"}
-          </Text>
-        </View>
-      </CalloutSubview>
+      {/* Action Buttons */}
+      <View style={styles.actionButtons}>
+        <CalloutSubview onPress={() => toggleRSVP(event)}>
+          <View style={styles.rsvpButton}>
+            <Text style={[styles.rsvpText, isRSVPed && styles.rsvpTextGoing]}>
+              {loading ? "..." : isRSVPed ? "✅ Going" : "RSVP"}
+            </Text>
+          </View>
+        </CalloutSubview>
+        
+        <CalloutSubview onPress={handleChat}>
+          <View style={styles.chatButton}>
+            <Text style={styles.chatButtonText}>💬 Chat</Text>
+          </View>
+        </CalloutSubview>
+      </View>
     </View>
   );
 }
@@ -171,6 +185,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: isSmallScreen ? 16 : 18,
   },
+  actionButtons: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    marginTop: 10,
+  },
   rsvpButton: {
     backgroundColor: "#3366FF",
     paddingVertical: isSmallScreen ? 8 : 10,
@@ -187,5 +207,19 @@ const styles = StyleSheet.create({
   },
   rsvpTextGoing: {
     color: "white",
+  },
+  chatButton: {
+    backgroundColor: "#4CAF50", // A green color for chat
+    paddingVertical: isSmallScreen ? 8 : 10,
+    paddingHorizontal: isSmallScreen ? 20 : 24,
+    borderRadius: 20,
+    minWidth: isSmallScreen ? 80 : 100,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  chatButtonText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: isSmallScreen ? 12 : 14,
   },
 });

@@ -11,6 +11,7 @@ import MapScreen from "../screens/MapScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import CreateEventScreen from "../screens/CreateEventScreen";
 import EditEventScreen from "../screens/EditEventScreen";
+import EventChatScreen from "../screens/EventChatScreen";
 import { useAuth } from "../context/AuthContext";
 
 const Stack = createNativeStackNavigator();
@@ -103,6 +104,11 @@ export default function RootNavigator() {
             name="EditEvent"
             component={EditEventScreen}
             options={{ title: "Edit Event" }}
+          />
+          <Stack.Screen
+            name="EventChat"
+            component={EventChatScreen}
+            options={{ headerShown: false }}
           />
         </Stack.Navigator>
       ) : (

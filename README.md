@@ -1,0 +1,257 @@
+# 🎓 UniConnect
+
+A React Native mobile application designed for UBC students to discover, create, and participate in campus events. UniConnect fosters community engagement through real-time event management, interactive maps, and social features.
+
+## ✨ Features
+
+### 🔐 Authentication & User Management
+- **UBC Email Authentication**: Secure login using @student.ubc.ca email addresses
+- **User Profiles**: Customizable profiles with editable names and avatars
+- **Persistent Sessions**: Automatic login for returning users
+- **Profile Management**: Edit personal information and view activity
+
+### 📅 Event Management
+- **Create Events**: Easy event creation with title, description, date, time, and location
+- **Interactive Location Picker**: Map-based location selection with geocoding
+- **Event Editing**: Modify existing events (creator only)
+- **Event Deletion**: Remove events with confirmation (creator only)
+- **Real-time Updates**: Events sync across all users instantly
+
+### 🗺️ Interactive Map
+- **Event Visualization**: View all events as pins on an interactive map
+- **UBC Campus Focus**: Centered on UBC campus with custom styling
+- **Event Popups**: Tap pins to see event details and RSVP
+- **Location Services**: Uses device GPS for current location
+- **Responsive Design**: Optimized for different screen sizes
+
+### 📍 RSVP System
+- **One-Click RSVP**: Simple RSVP functionality from any screen
+- **Real-time Counts**: Live RSVP counts update instantly
+- **RSVP Tracking**: Personal RSVP history and statistics
+- **Event Reminders**: Automatic notifications 1 hour before events
+- **Creator Notifications**: Event creators notified of new RSVPs
+
+### 💬 Real-time Chat
+- **Event Discussions**: Dedicated chat rooms for each event
+- **Live Messaging**: Real-time message updates across all users
+- **User Identification**: Shows sender names and timestamps
+- **Message Persistence**: All messages stored in Firebase
+- **Auto-scroll**: Automatically scrolls to new messages
+
+### 🔔 Push Notifications
+- **Event Reminders**: Scheduled notifications 1 hour before events
+- **RSVP Alerts**: Notifications when someone RSVPs to your events
+- **Permission Management**: Smart permission handling
+- **Cross-platform**: Works on both iOS and Android
+- **Customizable**: Different notification types and schedules
+
+### 📱 User Experience
+- **Responsive Design**: Adapts to different phone screen sizes
+- **Modern UI**: Clean, intuitive interface with consistent styling
+- **Loading States**: Proper loading indicators throughout the app
+- **Error Handling**: User-friendly error messages and recovery
+- **Offline Support**: Basic functionality without internet connection
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **React Native**: Cross-platform mobile development
+- **Expo**: Development platform and build tools
+- **React Navigation**: Navigation between screens
+- **React Native Maps**: Interactive map functionality
+- **Expo Location**: GPS and location services
+- **Expo Notifications**: Push notification system
+
+### Backend & Database
+- **Firebase Authentication**: User authentication and session management
+- **Firebase Firestore**: NoSQL database for real-time data
+- **Firebase Security Rules**: Data access control and validation
+
+### Development Tools
+- **Expo CLI**: Development and build tools
+- **React Native Debugger**: Debugging and development
+- **Firebase Console**: Database management and monitoring
+
+### Key Libraries
+- **date-fns**: Date formatting and manipulation
+- **react-native-geocoding**: Address to coordinates conversion
+- **@react-native-community/datetimepicker**: Date and time selection
+
+## 📱 Screenshots
+
+*[Screenshots would be added here showing the main screens of the app]*
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
+- Expo CLI (`npm install -g @expo/cli`)
+- iOS Simulator (for iOS development) or Android Studio (for Android development)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd uniconnect-app
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up Firebase**
+   - Create a new Firebase project
+   - Enable Authentication with Email/Password
+   - Create a Firestore database
+   - Add your Firebase configuration to `config/firebase.js`
+
+4. **Start the development server**
+   ```bash
+   npm start
+   ```
+
+5. **Run on device/simulator**
+   - Scan the QR code with Expo Go app (physical device)
+   - Press 'i' for iOS simulator
+   - Press 'a' for Android emulator
+
+## 📁 Project Structure
+
+```
+uniconnect-app/
+├── components/          # Reusable UI components
+│   ├── ChatMessage.js   # Individual chat message component
+│   ├── EventCard.js     # Event display card
+│   └── LocationPicker.js # Map-based location selector
+├── config/              # Configuration files
+│   └── firebase.js      # Firebase configuration
+├── context/             # React Context providers
+│   └── AuthContext.js   # Authentication state management
+├── hooks/               # Custom React hooks
+│   ├── useEvents.js     # Event data management
+│   ├── useRSVP.js       # RSVP functionality
+│   ├── useRSVPCount.js  # RSVP count tracking
+│   └── useEventChat.js  # Chat functionality
+├── navigation/          # Navigation configuration
+│   └── index.js         # Main navigation setup
+├── screens/             # App screens
+│   ├── HomeScreen.js    # Main events list
+│   ├── MapScreen.js     # Interactive map view
+│   ├── ProfileScreen.js # User profile
+│   ├── LoginScreen.js   # Authentication
+│   ├── CreateEventScreen.js # Event creation
+│   ├── EditEventScreen.js   # Event editing
+│   └── EventChatScreen.js   # Event discussions
+├── services/            # External services
+│   └── NotificationService.js # Push notifications
+├── utils/               # Utility functions
+│   ├── validators.js    # Input validation
+│   └── rsvpUtils.js     # RSVP utilities
+└── App.js               # Main app component
+```
+
+## 🔧 Configuration
+
+### Firebase Setup
+1. Create a Firebase project at [firebase.google.com](https://firebase.google.com)
+2. Enable Authentication with Email/Password provider
+3. Create a Firestore database
+4. Update `config/firebase.js` with your Firebase configuration:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "your-api-key",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "your-sender-id",
+  appId: "your-app-id"
+};
+```
+
+### Environment Variables
+Create a `.env` file in the root directory:
+```
+FIREBASE_API_KEY=your-api-key
+FIREBASE_PROJECT_ID=your-project-id
+```
+
+## 📊 Data Structure
+
+### Firestore Collections
+
+**Users Collection**
+```
+users/{userId}
+├── name: string
+├── email: string
+├── createdAt: timestamp
+└── rsvps/{eventId}
+    ├── eventId: string
+    ├── createdAt: timestamp
+    ├── status: string
+    └── notificationId: string
+```
+
+**Events Collection**
+```
+events/{eventId}
+├── title: string
+├── description: string
+├── location: string
+├── latitude: number
+├── longitude: number
+├── timestamp: timestamp
+├── createdBy: string
+└── messages/{messageId}
+    ├── text: string
+    ├── userId: string
+    ├── userName: string
+    └── timestamp: timestamp
+```
+
+## 🚀 Deployment
+
+### Expo Build
+```bash
+# Build for iOS
+expo build:ios
+
+# Build for Android
+expo build:android
+```
+
+### App Store Deployment
+1. Configure app.json with your app details
+2. Build the app using Expo
+3. Submit to App Store Connect (iOS) or Google Play Console (Android)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **UBC Community**: For inspiration and feedback
+- **Expo Team**: For the amazing development platform
+- **Firebase Team**: For the robust backend services
+- **React Native Community**: For the excellent documentation and support
+
+## 📞 Support
+
+For support, email [your-email@ubc.ca](mailto:your-email@ubc.ca) or create an issue in the repository.
+
+---
+
+**Built with ❤️ for the UBC community**

@@ -32,6 +32,10 @@ export default function HomeScreen() {
     refetch();
   };
 
+  const handleChatEvent = (event) => {
+    navigation.navigate('EventChat', { event });
+  };
+
   const getUserGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -104,6 +108,7 @@ export default function HomeScreen() {
               event={item} 
               onEdit={handleEditEvent}
               onDelete={handleDeleteEvent}
+              onChat={handleChatEvent}
             />
           )}
           refreshing={loading}

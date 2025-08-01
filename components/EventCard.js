@@ -36,7 +36,7 @@ const useUserProfile = (userId) => {
   return { userProfile, loading };
 };
 
-export default function EventCard({ event, onEdit, onDelete }) {
+export default function EventCard({ event, onEdit, onDelete, onChat }) {
   const { user } = useAuth();
   const { isRSVPed, toggleRSVP, loading } = useRSVP(event.id);
   const { userProfile: creatorProfile } = useUserProfile(event.createdBy);
@@ -74,6 +74,10 @@ export default function EventCard({ event, onEdit, onDelete }) {
     if (onEdit) onEdit(event);
   };
 
+  const handleChat = () => {
+    if (onChat) onChat(event);
+  };
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -105,11 +109,17 @@ export default function EventCard({ event, onEdit, onDelete }) {
         </Text>
       )}
 
-      <TouchableOpacity onPress={toggleRSVP} disabled={loading}>
-        <Text style={[styles.rsvp, isRSVPed && styles.going]}>
-          {loading ? "Loading..." : isRSVPed ? "✅ Going" : "RSVP"}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.bottomActions}>
+        <TouchableOpacity onPress={() => toggleRSVP(event)} disabled={loading}>
+          <Text style={[styles.rsvp, isRSVPed && styles.going]}>
+            {loading ? "Loading..." : isRSVPed ? "✅ Going" : "RSVP"}
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity onPress={handleChat} style={styles.chatButton}>
+          <Text style={styles.chatButtonText}>💬 Chat</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -168,13 +178,28 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     lineHeight: 18,
   },
-  rsvp: {
+  bottomActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 10,
+  },
+  rsvp: {
     fontWeight: "600",
     color: "#3366FF",
-    textAlign: "right",
   },
   going: {
     color: "green",
+  },
+  chatButton: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  chatButtonText: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
   },
 });
