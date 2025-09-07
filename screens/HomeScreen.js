@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, 
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useEvents } from "../hooks/useEvents";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { useRSVPCount } from "../hooks/useRSVPCount";
 import EventCard from "../components/EventCard";
 import CategoryFilter from "../components/CategoryFilter";
@@ -14,6 +15,7 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const { events, loading, refetch } = useEvents();
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
   const { rsvpCount } = useRSVPCount();
   const [selectedCategory, setSelectedCategory] = useState(null);
 
@@ -52,9 +54,9 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#3366FF" />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
@@ -62,15 +64,15 @@ export default function HomeScreen() {
 
   if (events.length === 0) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
         <View style={styles.container}>
-          <View style={styles.header}>
+          <View style={[styles.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
             <View style={styles.greetingContainer}>
-              <Text style={styles.greeting}>{getUserGreeting()}</Text>
-              <Text style={styles.userName}>{userProfile?.name || 'User'}</Text>
-              <Text style={styles.rsvpCount}>🎯 {rsvpCount} events RSVP'd</Text>
+              <Text style={[styles.greeting, { color: theme.textSecondary }]}>{getUserGreeting()}</Text>
+              <Text style={[styles.userName, { color: theme.text }]}>{userProfile?.name || 'User'}</Text>
+              <Text style={[styles.rsvpCount, { color: theme.textSecondary }]}>🎯 {rsvpCount} events RSVP'd</Text>
             </View>
-            <View style={styles.avatar}>
+            <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
               <Text style={styles.avatarText}>
                 {(userProfile?.name || 'U').charAt(0).toUpperCase()}
               </Text>
@@ -78,11 +80,11 @@ export default function HomeScreen() {
           </View>
           
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No events yet 😔</Text>
-            <Text style={styles.emptySubtitle}>Be the first to create an event!</Text>
+            <Text style={[styles.emptyTitle, { color: theme.text }]}>No events yet 😔</Text>
+            <Text style={[styles.emptySubtitle, { color: theme.textSecondary }]}>Be the first to create an event!</Text>
           </View>
           
-          <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreateEvent')}>
+          <TouchableOpacity style={[styles.fab, { backgroundColor: theme.primary }]} onPress={() => navigation.navigate('CreateEvent')}>
             <Text style={styles.fabText}>+</Text>
           </TouchableOpacity>
         </View>
@@ -91,15 +93,15 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
           <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>{getUserGreeting()}</Text>
-            <Text style={styles.userName}>{userProfile?.name || 'User'}</Text>
-            <Text style={styles.rsvpCount}>🎯 {rsvpCount} events RSVP'd</Text>
+            <Text style={[styles.greeting, { color: theme.textSecondary }]}>{getUserGreeting()}</Text>
+            <Text style={[styles.userName, { color: theme.text }]}>{userProfile?.name || 'User'}</Text>
+            <Text style={[styles.rsvpCount, { color: theme.textSecondary }]}>🎯 {rsvpCount} events RSVP'd</Text>
           </View>
-          <View style={styles.avatar}>
+          <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
             <Text style={styles.avatarText}>
               {(userProfile?.name || 'U').charAt(0).toUpperCase()}
             </Text>
@@ -113,8 +115,8 @@ export default function HomeScreen() {
 
         {filteredEvents.length === 0 && selectedCategory && (
           <View style={styles.noResultsContainer}>
-            <Text style={styles.noResultsTitle}>No events in this category</Text>
-            <Text style={styles.noResultsSubtitle}>
+            <Text style={[styles.noResultsTitle, { color: theme.text }]}>No events in this category</Text>
+            <Text style={[styles.noResultsSubtitle, { color: theme.textSecondary }]}>
               Try selecting a different category or create a new event!
             </Text>
           </View>
@@ -137,7 +139,7 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
         />
         
-        <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreateEvent')}>
+        <TouchableOpacity style={[styles.fab, { backgroundColor: theme.primary }]} onPress={() => navigation.navigate('CreateEvent')}>
           <Text style={styles.fabText}>+</Text>
         </TouchableOpacity>
       </View>
@@ -148,7 +150,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   container: {
     flex: 1,
@@ -159,33 +160,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: isSmallScreen ? 16 : 20,
     paddingVertical: isSmallScreen ? 16 : 20,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   greetingContainer: {
     flex: 1,
   },
   greeting: {
     fontSize: isSmallScreen ? 14 : 16,
-    color: '#666',
     marginBottom: 4,
   },
   userName: {
     fontSize: isSmallScreen ? 20 : 24,
     fontWeight: 'bold',
-    color: '#333',
   },
   rsvpCount: {
     fontSize: isSmallScreen ? 14 : 16,
-    color: '#666',
     marginTop: 4,
   },
   avatar: {
     width: isSmallScreen ? 40 : 48,
     height: isSmallScreen ? 40 : 48,
     borderRadius: isSmallScreen ? 20 : 24,
-    backgroundColor: '#3366FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -212,13 +207,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: isSmallScreen ? 18 : 20,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: isSmallScreen ? 14 : 16,
-    color: '#666',
     textAlign: 'center',
   },
   fab: {
@@ -228,7 +221,6 @@ const styles = StyleSheet.create({
     width: isSmallScreen ? 50 : 56,
     height: isSmallScreen ? 50 : 56,
     borderRadius: isSmallScreen ? 25 : 28,
-    backgroundColor: '#3366FF',
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
@@ -253,13 +245,11 @@ const styles = StyleSheet.create({
   noResultsTitle: {
     fontSize: isSmallScreen ? 18 : 20,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 8,
     textAlign: 'center',
   },
   noResultsSubtitle: {
     fontSize: isSmallScreen ? 14 : 16,
-    color: '#666',
     textAlign: 'center',
   },
 });

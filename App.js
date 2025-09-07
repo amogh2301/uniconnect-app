@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import RootNavigator from "./navigation";
 import NotificationService from "./services/NotificationService";
 import * as Notifications from 'expo-notifications';
@@ -31,7 +32,9 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <RootNavigator />
+      <ThemeProvider>
+        <RootNavigator />
+      </ThemeProvider>
     </AuthProvider>
   );
 }

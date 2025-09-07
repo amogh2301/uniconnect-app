@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { View, Text, Button, StyleSheet, SafeAreaView, Dimensions, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { useRSVPCount } from "../hooks/useRSVPCount";
+import ThemeToggle from "../components/ThemeToggle";
 
 const { width, height } = Dimensions.get('window');
 const isSmallScreen = height < 700;
 
 export default function ProfileScreen() {
   const { user, userProfile, logout, updateUserProfile } = useAuth();
+  const { theme } = useTheme();
   const { rsvpCount } = useRSVPCount();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(userProfile?.name || '');
@@ -33,14 +36,14 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Profile</Text>
+        <View style={[styles.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+          <Text style={[styles.title, { color: theme.text }]}>Profile</Text>
         </View>
 
-        <View style={styles.profileSection}>
-          <View style={styles.avatar}>
+        <View style={[styles.profileSection, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+          <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
             <Text style={styles.avatarText}>
               {(userProfile?.name || 'U').charAt(0).toUpperCase()}
             </Text>
@@ -50,41 +53,46 @@ export default function ProfileScreen() {
             {isEditing ? (
               <View style={styles.editContainer}>
                 <TextInput
-                  style={styles.nameInput}
+                  style={[styles.nameInput, { 
+                    backgroundColor: theme.inputBackground,
+                    borderColor: theme.primary,
+                    color: theme.text
+                  }]}
                   value={name}
                   onChangeText={setName}
                   placeholder="Enter your name"
+                  placeholderTextColor={theme.inputPlaceholder}
                   autoFocus
                 />
                 <View style={styles.editButtons}>
-                  <TouchableOpacity onPress={handleSaveName} style={styles.saveButton}>
+                  <TouchableOpacity onPress={handleSaveName} style={[styles.saveButton, { backgroundColor: theme.primary }]}>
                     <Text style={styles.saveButtonText}>Save</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={handleCancelEdit} style={styles.cancelButton}>
+                  <TouchableOpacity onPress={handleCancelEdit} style={[styles.cancelButton, { backgroundColor: theme.secondary }]}>
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             ) : (
               <View style={styles.nameContainer}>
-                <Text style={styles.userName}>{userProfile?.name || 'User'}</Text>
+                <Text style={[styles.userName, { color: theme.text }]}>{userProfile?.name || 'User'}</Text>
                 <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.editButton}>
-                  <Text style={styles.editButtonText}>✏️ Edit</Text>
+                  <Text style={[styles.editButtonText, { color: theme.primary }]}>✏️ Edit</Text>
                 </TouchableOpacity>
               </View>
             )}
           </View>
         </View>
 
-        <View style={styles.infoSection}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{user?.email}</Text>
+        <View style={[styles.infoSection, { backgroundColor: theme.card }]}>
+          <View style={[styles.infoRow, { borderBottomColor: theme.borderLight }]}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Email</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>{user?.email}</Text>
           </View>
           
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Member Since</Text>
-            <Text style={styles.infoValue}>
+          <View style={[styles.infoRow, { borderBottomColor: theme.borderLight }]}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Member Since</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>
               {userProfile?.createdAt ? 
                 new Date(userProfile.createdAt.toDate()).toLocaleDateString() : 
                 'Recently'
@@ -92,17 +100,22 @@ export default function ProfileScreen() {
             </Text>
           </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Events RSVP'd</Text>
-            <Text style={styles.infoValue}>{rsvpCount}</Text>
+          <View style={[styles.infoRow, { borderBottomColor: theme.borderLight }]}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Events RSVP'd</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>{rsvpCount}</Text>
           </View>
+        </View>
+
+        <View style={[styles.settingsSection, { backgroundColor: theme.card }]}>
+          <Text style={[styles.settingsTitle, { color: theme.text }]}>Settings</Text>
+          <ThemeToggle />
         </View>
 
         <View style={styles.buttonContainer}>
           <Button 
             title="Log out" 
             onPress={logout}
-            color="#dc3545"
+            color={theme.error}
           />
         </View>
       </View>
@@ -234,5 +247,14 @@ const styles = StyleSheet.create({
   buttonContainer: {
     margin: isSmallScreen ? 20 : 24,
     marginTop: 'auto',
+  },
+  settingsSection: {
+    marginTop: 16,
+    padding: isSmallScreen ? 20 : 24,
+  },
+  settingsTitle: {
+    fontSize: isSmallScreen ? 18 : 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
 });

@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { db } from '../config/firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import LocationPicker from '../components/LocationPicker';
 import CategoryPicker from '../components/CategoryPicker';
 
@@ -12,6 +13,7 @@ const isSmallScreen = height < 700;
 
 export default function CreateEventScreen({ navigation }) {
   const { user } = useAuth();
+  const { theme } = useTheme();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -66,50 +68,68 @@ export default function CreateEventScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <Text style={styles.label}>Event Title</Text>
+        <Text style={[styles.label, { color: theme.text }]}>Event Title</Text>
         <TextInput 
-          style={styles.input} 
+          style={[styles.input, { 
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.inputBorder,
+            color: theme.text
+          }]} 
           value={title} 
           onChangeText={setTitle}
           placeholder="Enter event title"
+          placeholderTextColor={theme.inputPlaceholder}
         />
 
-        <Text style={styles.label}>Category</Text>
+        <Text style={[styles.label, { color: theme.text }]}>Category</Text>
         <CategoryPicker
           selectedCategory={category}
           onSelectCategory={setCategory}
           style={styles.categoryPicker}
         />
 
-        <Text style={styles.label}>Description</Text>
+        <Text style={[styles.label, { color: theme.text }]}>Description</Text>
         <TextInput 
-          style={[styles.input, { height: 80 }]} 
+          style={[styles.input, { 
+            height: 80,
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.inputBorder,
+            color: theme.text
+          }]} 
           value={description} 
           onChangeText={setDescription} 
           multiline
           placeholder="Enter event description"
+          placeholderTextColor={theme.inputPlaceholder}
         />
 
-        <Text style={styles.label}>Location</Text>
+        <Text style={[styles.label, { color: theme.text }]}>Location</Text>
         <TouchableOpacity 
-          style={styles.locationButton} 
+          style={[styles.locationButton, { 
+            borderColor: theme.primary,
+            backgroundColor: theme.primaryLight
+          }]} 
           onPress={() => setShowLocationPicker(true)}
         >
-          <Text style={styles.locationButtonText}>
+          <Text style={[styles.locationButtonText, { color: theme.primary }]}>
             {location ? '📍 ' + location : '🗺️ Select Location on Map'}
           </Text>
         </TouchableOpacity>
         
         {latitude && longitude && (
-          <Text style={styles.coordinates}>
+          <Text style={[styles.coordinates, { color: theme.success }]}>
             ✅ Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
           </Text>
         )}
 
-        <Text style={styles.label}>Date & Time</Text>
-        <Button title={date.toLocaleString()} onPress={() => setShowDatePicker(true)} />
+        <Text style={[styles.label, { color: theme.text }]}>Date & Time</Text>
+        <Button 
+          title={date.toLocaleString()} 
+          onPress={() => setShowDatePicker(true)}
+          color={theme.primary}
+        />
 
         {showDatePicker && (
           <DateTimePicker
@@ -126,14 +146,16 @@ export default function CreateEventScreen({ navigation }) {
         )}
 
         <TouchableOpacity 
-          style={[styles.createButton, isLoading && styles.createButtonDisabled]} 
+          style={[styles.createButton, { 
+            backgroundColor: isLoading ? theme.buttonDisabled : theme.buttonPrimary
+          }, isLoading && styles.createButtonDisabled]} 
           onPress={handleCreateEvent}
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#fff" size="small" />
+            <ActivityIndicator color={theme.background} size="small" />
           ) : (
-            <Text style={styles.createButtonText}>Create Event</Text>
+            <Text style={[styles.createButtonText, { color: theme.background }]}>Create Event</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -151,7 +173,6 @@ export default function CreateEventScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff'
   },
   container: {
     padding: 20,
@@ -164,7 +185,6 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     padding: 10,
     borderRadius: 5,
     marginTop: 5
@@ -175,39 +195,32 @@ const styles = StyleSheet.create({
   },
   locationButton: {
     borderWidth: 1,
-    borderColor: '#3366FF',
     borderStyle: 'dashed',
     padding: 15,
     borderRadius: 8,
     marginTop: 5,
-    backgroundColor: '#f8f9ff',
     alignItems: 'center',
   },
   locationButtonText: {
     fontSize: 16,
-    color: '#3366FF',
     fontWeight: '500',
   },
   coordinates: {
     marginTop: 5,
     fontSize: 12,
-    color: '#28a745',
     fontStyle: 'italic'
   },
   createButton: {
-    backgroundColor: '#3366FF',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 20,
   },
   createButtonText: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
   createButtonDisabled: {
-    backgroundColor: '#ccc',
     opacity: 0.7,
   },
 });

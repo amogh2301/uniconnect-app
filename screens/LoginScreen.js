@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "fire
 import { auth } from "../config/firebase";
 import { isUBCStudentEmail } from "../utils/validators";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import EmailVerificationService from "../services/EmailVerificationService";
 
 const { width, height } = Dimensions.get('window');
@@ -16,6 +17,7 @@ export default function LoginScreen({ navigation, route }) {
   const [loading, setLoading] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const { user } = useAuth();
+  const { theme } = useTheme();
 
   // Handle route params for verified email
   useEffect(() => {
@@ -126,20 +128,25 @@ export default function LoginScreen({ navigation, route }) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.logo}>🎓</Text>
-          <Text style={styles.title}>UniConnect</Text>
-          <Text style={styles.subtitle}>Connect with UBC events</Text>
+          <Text style={[styles.title, { color: theme.text }]}>UniConnect</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Connect with UBC events</Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>UBC Email</Text>
+            <Text style={[styles.inputLabel, { color: theme.text }]}>UBC Email</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { 
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.inputBorder,
+                color: theme.text
+              }]}
               placeholder="yourname@student.ubc.ca"
+              placeholderTextColor={theme.inputPlaceholder}
               autoCapitalize="none"
               keyboardType="email-address"
               value={email}
@@ -149,10 +156,15 @@ export default function LoginScreen({ navigation, route }) {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Password</Text>
+            <Text style={[styles.inputLabel, { color: theme.text }]}>Password</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { 
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.inputBorder,
+                color: theme.text
+              }]}
               placeholder="Enter your password"
+              placeholderTextColor={theme.inputPlaceholder}
               secureTextEntry
               value={pw}
               onChangeText={setPw}
@@ -161,22 +173,24 @@ export default function LoginScreen({ navigation, route }) {
           </View>
 
           {mode === "signup" && (
-            <View style={styles.verificationInfo}>
-              <Text style={styles.verificationText}>
+            <View style={[styles.verificationInfo, { backgroundColor: theme.primaryLight }]}>
+              <Text style={[styles.verificationText, { color: theme.textSecondary }]}>
                 🔐 UBC student email verification required for sign up
               </Text>
             </View>
           )}
 
           <TouchableOpacity 
-            style={[styles.authButton, loading && styles.authButtonDisabled]} 
+            style={[styles.authButton, { 
+              backgroundColor: loading ? theme.buttonDisabled : theme.buttonPrimary
+            }, loading && styles.authButtonDisabled]} 
             onPress={handleAuth} 
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" size="small" />
+              <ActivityIndicator color={theme.background} size="small" />
             ) : (
-              <Text style={styles.authButtonText}>
+              <Text style={[styles.authButtonText, { color: theme.background }]}>
                 {mode === "signup" ? "Create Account" : "Sign In"}
               </Text>
             )}
@@ -184,14 +198,14 @@ export default function LoginScreen({ navigation, route }) {
 
           {mode === "signup" && (
             <TouchableOpacity 
-              style={styles.otpButton} 
+              style={[styles.otpButton, { backgroundColor: theme.primaryLight }]} 
               onPress={handleSendOTP}
               disabled={otpLoading || !isUBCStudentEmail(email)}
             >
               {otpLoading ? (
-                <ActivityIndicator color="#3366FF" size="small" />
+                <ActivityIndicator color={theme.primary} size="small" />
               ) : (
-                <Text style={styles.otpButtonText}>
+                <Text style={[styles.otpButtonText, { color: theme.primary }]}>
                   📧 Send Verification Code
                 </Text>
               )}
@@ -203,7 +217,7 @@ export default function LoginScreen({ navigation, route }) {
             onPress={() => setMode(mode === "signup" ? "login" : "signup")}
             disabled={loading}
           >
-            <Text style={styles.toggleText}>
+            <Text style={[styles.toggleText, { color: theme.primary }]}>
               {mode === "signup" 
                 ? "Already have an account? Sign In" 
                 : "Don't have an account? Sign Up"
@@ -213,7 +227,7 @@ export default function LoginScreen({ navigation, route }) {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
+          <Text style={[styles.footerText, { color: theme.textSecondary }]}>
             By continuing, you agree to our Terms of Service and Privacy Policy
           </Text>
         </View>
@@ -225,7 +239,6 @@ export default function LoginScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   container: {
     flex: 1,
@@ -243,12 +256,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: isSmallScreen ? 28 : 32,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: isSmallScreen ? 14 : 16,
-    color: '#666',
     textAlign: 'center',
   },
   form: {
@@ -262,20 +273,15 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 12,
     padding: isSmallScreen ? 14 : 16,
     fontSize: 16,
-    backgroundColor: '#fff',
-    color: '#333',
   },
   authButton: {
-    backgroundColor: '#3366FF',
     borderRadius: 12,
     padding: isSmallScreen ? 16 : 18,
     alignItems: 'center',
@@ -290,10 +296,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   authButtonDisabled: {
-    backgroundColor: '#ccc',
+    // Color will be applied dynamically
   },
   authButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -302,7 +307,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   toggleText: {
-    color: '#3366FF',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -312,12 +316,10 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#999',
     textAlign: 'center',
     lineHeight: 16,
   },
   verificationInfo: {
-    backgroundColor: '#e0f7fa',
     borderRadius: 12,
     padding: 15,
     marginTop: 20,
@@ -325,12 +327,10 @@ const styles = StyleSheet.create({
   },
   verificationText: {
     fontSize: 14,
-    color: '#00796b',
     fontWeight: '500',
     textAlign: 'center',
   },
   otpButton: {
-    backgroundColor: '#e0f7fa',
     borderRadius: 12,
     padding: isSmallScreen ? 14 : 16,
     alignItems: 'center',

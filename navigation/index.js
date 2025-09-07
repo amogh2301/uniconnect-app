@@ -14,6 +14,7 @@ import EditEventScreen from "../screens/EditEventScreen";
 import EventChatScreen from "../screens/EventChatScreen";
 import OTPVerificationScreen from "../screens/OTPVerificationScreen";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -24,17 +25,21 @@ const isSmallScreen = height < 700;
 const isLargeScreen = height > 800;
 
 function LoadingScreen() {
+  const { theme } = useTheme();
+  
   return (
-    <View style={styles.loadingContainer}>
+    <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
       <Text style={styles.loadingLogo}>🎓</Text>
-      <Text style={styles.loadingTitle}>UniConnect</Text>
-      <ActivityIndicator size="large" color="#3366FF" style={styles.loadingSpinner} />
-      <Text style={styles.loadingText}>Loading...</Text>
+      <Text style={[styles.loadingTitle, { color: theme.text }]}>UniConnect</Text>
+      <ActivityIndicator size="large" color={theme.primary} style={styles.loadingSpinner} />
+      <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading...</Text>
     </View>
   );
 }
 
 function AppTabs() {
+  const { theme } = useTheme();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -51,12 +56,12 @@ function AppTabs() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#3366FF',
-        tabBarInactiveTintColor: '#666',
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textSecondary,
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: theme.tabBar,
           borderTopWidth: 1,
-          borderTopColor: '#e0e0e0',
+          borderTopColor: theme.tabBarBorder,
           paddingBottom: Platform.OS === 'ios' ? (isSmallScreen ? 5 : 10) : 5,
           paddingTop: Platform.OS === 'ios' ? (isSmallScreen ? 5 : 10) : 5,
           height: Platform.OS === 'ios' ? (isSmallScreen ? 70 : 85) : 60,
@@ -82,8 +87,9 @@ function AppTabs() {
 
 export default function RootNavigator() {
   const { user, loading } = useAuth();
+  const { isLoading: themeLoading } = useTheme();
 
-  if (loading) {
+  if (loading || themeLoading) {
     return <LoadingScreen />;
   }
 
@@ -135,7 +141,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
   },
   loadingLogo: {
     fontSize: 60,
@@ -144,7 +149,6 @@ const styles = StyleSheet.create({
   loadingTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 40,
   },
   loadingSpinner: {
@@ -152,6 +156,5 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
   },
 });

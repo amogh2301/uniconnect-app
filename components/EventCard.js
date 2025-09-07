@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } fr
 import { format } from "date-fns";
 import { useRSVP } from "../hooks/useRSVP";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { doc, deleteDoc, getDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { getCategoryIcon, getCategoryColor, getCategoryName } from "../utils/categories";
@@ -39,6 +40,7 @@ const useUserProfile = (userId) => {
 
 export default function EventCard({ event, onEdit, onDelete, onChat }) {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const { isRSVPed, toggleRSVP, loading } = useRSVP(event.id);
   const { userProfile: creatorProfile } = useUserProfile(event.createdBy);
   
@@ -80,11 +82,11 @@ export default function EventCard({ event, onEdit, onDelete, onChat }) {
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.header}>
         <View style={styles.titleSection}>
           <View style={styles.titleRow}>
-            <Text style={styles.title}>{event.title}</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{event.title}</Text>
             {event.category && (
               <View style={[styles.categoryBadge, { backgroundColor: getCategoryColor(event.category) }]}>
                 <Text style={styles.categoryIcon}>{getCategoryIcon(event.category)}</Text>
@@ -92,7 +94,7 @@ export default function EventCard({ event, onEdit, onDelete, onChat }) {
               </View>
             )}
           </View>
-          <Text style={styles.creator}>
+          <Text style={[styles.creator, { color: theme.textSecondary }]}>
             by {creatorProfile?.name || 'Unknown User'}
           </Text>
         </View>
@@ -108,25 +110,25 @@ export default function EventCard({ event, onEdit, onDelete, onChat }) {
         )}
       </View>
       
-      <Text style={styles.meta}>
+      <Text style={[styles.meta, { color: theme.textSecondary }]}>
         📅 {format(eventDate, "MMMM d, yyyy • h:mm a")}
       </Text>
-      <Text style={styles.meta}>📍 {event.location}</Text>
+      <Text style={[styles.meta, { color: theme.textSecondary }]}>📍 {event.location}</Text>
       {event.description && (
-        <Text style={styles.description} numberOfLines={2}>
+        <Text style={[styles.description, { color: theme.text }]} numberOfLines={2}>
           {event.description}
         </Text>
       )}
 
       <View style={styles.bottomActions}>
         <TouchableOpacity onPress={() => toggleRSVP(event)} disabled={loading}>
-          <Text style={[styles.rsvp, isRSVPed && styles.going]}>
+          <Text style={[styles.rsvp, { color: theme.primary }, isRSVPed && { color: theme.success }]}>
             {loading ? "Loading..." : isRSVPed ? "✅ Going" : "RSVP"}
           </Text>
         </TouchableOpacity>
         
-        <TouchableOpacity onPress={handleChat} style={styles.chatButton}>
-          <Text style={styles.chatButtonText}>💬 Chat</Text>
+        <TouchableOpacity onPress={handleChat} style={[styles.chatButton, { backgroundColor: theme.primary }]}>
+          <Text style={[styles.chatButtonText, { color: theme.background }]}>💬 Chat</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -135,7 +137,6 @@ export default function EventCard({ event, onEdit, onDelete, onChat }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -143,6 +144,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 8,
+    borderWidth: 1,
   },
   header: {
     flexDirection: "row",
@@ -163,7 +165,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: '#333',
     flex: 1,
     marginRight: 8,
   },
@@ -186,7 +187,6 @@ const styles = StyleSheet.create({
   },
   creator: {
     fontSize: 12,
-    color: '#666',
     fontStyle: 'italic',
   },
   actions: {
@@ -202,11 +202,9 @@ const styles = StyleSheet.create({
   meta: {
     marginTop: 4,
     marginBottom: 6,
-    color: "#666",
     fontSize: 14,
   },
   description: {
-    color: '#666',
     fontSize: 14,
     marginBottom: 8,
     lineHeight: 18,
@@ -219,20 +217,17 @@ const styles = StyleSheet.create({
   },
   rsvp: {
     fontWeight: "600",
-    color: "#3366FF",
   },
   going: {
-    color: "green",
+    // Color will be applied dynamically
   },
   chatButton: {
-    backgroundColor: '#f0f0f0',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   chatButtonText: {
     fontSize: 12,
-    color: '#666',
     fontWeight: '500',
   },
 });
